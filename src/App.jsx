@@ -253,7 +253,7 @@ export default function App() {
               style={{ width: "52px", height: "52px", borderRadius: "50%", objectFit: "cover" }}
             />
             <div>
-              <h1 style={{ margin: 0, color: "#15803d" }}>Piolo pogi</h1>
+              <h1 style={{ margin: 0, color: "#15803d" }}>e-Enforce-PH</h1>
               <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}></p>
             </div>
           </div>
