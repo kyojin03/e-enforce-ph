@@ -658,18 +658,34 @@ export default function App() {
           </div>
         )}
 
-        {page === "about" && (
-          <div style={cardStyle}>
-            <h2>About Us</h2>
-            <p>
-              e-Enforce PH is a student-friendly prototype for a universal environmental reporting website.
-            </p>
-            <p>
-              Its goal is to make reporting easier, improve transparency, and show how citizens and agencies
-              could use one system for environmental concerns.
-            </p>
-          </div>
-        )}
+{page === "about" && (
+  <div style={cardStyle}>
+    <h2>About Us</h2>
+
+    <p>
+      e-Enforce PH is a student-friendly prototype for a universal environmental reporting website.
+    </p>
+
+    <p>
+      Developed by students from <strong>Nueva Ecija University of Science and Technology (NEUST)</strong>.
+    </p>
+
+    <p>
+      <strong>Program:</strong> Bachelor of Science in Business Administration Major in Human Resource Management (BSBA-HRM)<br />
+      <strong>Section:</strong> BSBA-HRM-2-A<br />
+      <strong>College:</strong> College of Management, Business and Tourism
+    </p>
+
+    <h3 style={{ marginTop: "20px" }}>Team Members</h3>
+    <ul>
+      <li>Bulos, Roa Sunshine P.</li>
+      <li>Ferrer, Pretty Rose C.</li>
+      <li>Linda, Cassandra Mei M.</li>
+      <li>Padua, Resciebel V.</li>
+      <li>Sanchez, Jillian G.</li>
+    </ul>
+  </div>
+)}
 
         <section style={{ marginTop: "30px" }}>
           <div style={cardStyle}>
