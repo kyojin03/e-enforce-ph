@@ -341,7 +341,7 @@ export default function App() {
                 padding: "40px",
               }}
             >
-              <h2 style={{ fontSize: "42px", marginTop: 0, fontWeight: "bold" }}>
+              <h2 style={{ fontSize: "42px", marginTop: 0, fontWeight: "bold", color: "#ffffff" }}>
                 Protect the Environment. Report Issues That Matter.
               </h2>
               <p style={{ maxWidth: "700px", fontSize: "18px" }}>
