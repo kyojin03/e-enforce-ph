@@ -295,12 +295,26 @@ export default function App() {
               }}
             />
             <div>
-              <h1 style={{ margin: 0, color: headingColor, fontWeight: "bold" }}>
-                e-Enforce PH
-              </h1>
-              <p style={{ margin: 0, fontSize: "13px", color: mutedColor }}>
-                Environmental Reporting System
-              </p>
+              <h1
+  style={{
+    margin: 0,
+    color: headingColor,
+    fontWeight: "bold",
+    fontSize: "34px",
+  }}
+>
+  e-Enforce PH
+</h1>
+
+<p
+  style={{
+    marginTop: "4px",   // 👈 THIS is the important fix
+    fontSize: "12px",
+    color: mutedColor,
+  }}
+>
+  Environmental Reporting System
+</p>
             </div>
           </div>
 
