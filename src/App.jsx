@@ -6,38 +6,38 @@ const issueTypes = [
   {
     id: "dumping",
     title: "Illegal Dumping",
-    description: "Garbage thrown in rivers, roadsides, or empty lots.",
-    emoji: "🗑️",
+    description: "Improper disposal of waste in rivers, roadsides, or open areas.",
+    image: "/images/dumping.jpg",
   },
   {
     id: "logging",
     title: "Illegal Logging",
-    description: "Cutting trees without permission.",
-    emoji: "🌳",
+    description: "Unauthorized cutting or removal of trees and forest resources.",
+    image: "/images/logging.jpg",
   },
   {
     id: "water",
-    title: "Dirty Water",
-    description: "Polluted rivers, creeks, lakes, or coastal areas.",
-    emoji: "💧",
+    title: "Water Pollution",
+    description: "Contamination of rivers, creeks, lakes, or coastal areas.",
+    image: "/images/water.jpg",
   },
   {
     id: "air",
     title: "Air Pollution",
-    description: "Smoke, fumes, or harmful emissions.",
-    emoji: "🏭",
+    description: "Smoke, fumes, or harmful emissions affecting air quality.",
+    image: "/images/air.jpg",
   },
   {
     id: "wildlife",
     title: "Wildlife Harm",
-    description: "Illegal capture, trade, or abuse of wildlife.",
-    emoji: "🐾",
+    description: "Illegal capture, trade, abuse, or destruction of wildlife.",
+    image: "/images/wildlife.jpg",
   },
   {
     id: "other",
-    title: "Other Issue",
-    description: "Any other environmental concern.",
-    emoji: "⚠️",
+    title: "Other Environmental Issue",
+    description: "Any other environmental concern that requires reporting.",
+    image: "/images/other.jpg",
   },
 ];
 
@@ -64,7 +64,16 @@ function formatDate(dateString) {
 }
 
 function generateTrackingCode(existingReports) {
-  const nextNumber = existingReports.length + 1;
+  if (existingReports.length === 0) return "EEP-0001";
+
+  const numbers = existingReports
+    .map((report) => {
+      const match = report.trackingCode?.match(/EEP-(\d+)/);
+      return match ? Number(match[1]) : 0;
+    })
+    .filter((num) => !Number.isNaN(num));
+
+  const nextNumber = (numbers.length ? Math.max(...numbers) : 0) + 1;
   return `EEP-${String(nextNumber).padStart(4, "0")}`;
 }
 
@@ -94,15 +103,15 @@ export default function App() {
 
   const totalReports = reports.length;
   const checkingCount = useMemo(
-    () => reports.filter((report) => report.status === "Being Checked").length,
+    () => reports.filter((report) => report.status === "Under Review").length,
     [reports]
   );
   const fixedCount = useMemo(
-    () => reports.filter((report) => report.status === "Being Fixed").length,
+    () => reports.filter((report) => report.status === "In Progress").length,
     [reports]
   );
   const doneCount = useMemo(
-    () => reports.filter((report) => report.status === "Done").length,
+    () => reports.filter((report) => report.status === "Resolved").length,
     [reports]
   );
 
@@ -117,7 +126,12 @@ export default function App() {
 
   function handleSubmitReport() {
     if (!selectedIssue || !location.trim() || !details.trim()) {
-      alert("Please complete the issue type, location, and details first.");
+      alert("Please complete the issue type, location, and details.");
+      return;
+    }
+
+    if (!isAnonymous && (!reporterName.trim() || !reporterContact.trim())) {
+      alert("Please provide your name and contact number.");
       return;
     }
 
@@ -128,13 +142,13 @@ export default function App() {
     const newReport = {
       id: Date.now(),
       trackingCode,
-      issueType: issue?.title || "Other Issue",
+      issueType: issue?.title || "Other Environmental Issue",
       location,
       details,
       isAnonymous,
       reporterName: isAnonymous ? "" : reporterName,
       reporterContact: isAnonymous ? "" : reporterContact,
-      status: "Being Checked",
+      status: "Under Review",
       submittedAt: now,
       updatedAt: now,
     };
@@ -155,7 +169,7 @@ export default function App() {
 
     if (!match) {
       setFoundReport(null);
-      alert("Tracking code not found on this computer/browser.");
+      alert("Tracking code not found. Please check and try again.");
       return;
     }
 
@@ -175,20 +189,20 @@ export default function App() {
         isAnonymous: true,
         reporterName: "",
         reporterContact: "",
-        status: "Being Checked",
+        status: "Under Review",
         submittedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
       {
         id: 2,
         trackingCode: "EEP-0002",
-        issueType: "Dirty Water",
+        issueType: "Water Pollution",
         location: "Near riverbank, Cebu City",
-        details: "Water looks dark and has a strong chemical smell.",
+        details: "Water appears dark and has a strong chemical smell.",
         isAnonymous: false,
         reporterName: "Maria Santos",
         reporterContact: "09123456789",
-        status: "Being Fixed",
+        status: "In Progress",
         submittedAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       },
@@ -198,9 +212,7 @@ export default function App() {
   }
 
   function clearAllReports() {
-    const confirmed = window.confirm(
-      "Delete all prototype reports saved on this computer?"
-    );
+    const confirmed = window.confirm("Delete all saved reports?");
     if (!confirmed) return;
     setReports([]);
     setFoundReport(null);
@@ -209,11 +221,11 @@ export default function App() {
   }
 
   const cardStyle = {
-    background: "#fff",
+    background: "#ffffff",
     borderRadius: "18px",
     padding: "20px",
     boxShadow: "0 2px 10px rgba(0,0,0,0.08)",
-    border: "1px solid #e5e7eb",
+    border: "1px solid #d1fae5",
   };
 
   const buttonStyle = {
@@ -228,42 +240,76 @@ export default function App() {
     width: "100%",
     padding: "12px",
     borderRadius: "10px",
-    border: "1px solid #cbd5e1",
+    border: "1px solid #86efac",
     marginTop: "6px",
     boxSizing: "border-box",
+    color: "#14532d",
   };
 
+  const headingColor = "#166534";
+  const bodyColor = "#14532d";
+  const mutedColor = "#4d7c0f";
+  const primaryGreen = "#15803d";
+  const lightGreen = "#f0fdf4";
+
   return (
-    <div style={{ minHeight: "100vh", background: "#f8fafc", color: "#1e293b", fontFamily: "Arial, sans-serif" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "#f7fff9",
+        color: bodyColor,
+        fontFamily: "Arial, sans-serif",
+      }}
+    >
       <header
         style={{
           background: "#ffffff",
-          borderBottom: "1px solid #e2e8f0",
+          borderBottom: "1px solid #dcfce7",
           padding: "16px 24px",
           position: "sticky",
           top: 0,
           zIndex: 10,
         }}
       >
-        <div style={{ maxWidth: "1200px", margin: "0 auto", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "20px", flexWrap: "wrap" }}>
+        <div
+          style={{
+            maxWidth: "1200px",
+            margin: "0 auto",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            gap: "20px",
+            flexWrap: "wrap",
+          }}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <img
               src="/logo.jpg.jfif"
               alt="e-Enforce PH logo"
-              style={{ width: "52px", height: "52px", borderRadius: "50%", objectFit: "cover" }}
+              style={{
+                width: "52px",
+                height: "52px",
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid #22c55e",
+              }}
             />
             <div>
-              <h1 style={{ margin: 0, color: "#15803d" }}>naniningil na po collateral lang to :)</h1>
-              <p style={{ margin: 0, fontSize: "13px", color: "#64748b" }}></p>
+              <h1 style={{ margin: 0, color: headingColor, fontWeight: "bold" }}>
+                e-Enforce PH
+              </h1>
+              <p style={{ margin: 0, fontSize: "13px", color: mutedColor }}>
+                Environmental Reporting System
+              </p>
             </div>
           </div>
 
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {[
               ["home", "Home"],
-              ["report", "Report a Problem"],
-              ["track", "Track Your Report"],
-              ["rules", "Rules & Steps"],
+              ["report", "Submit a Report"],
+              ["track", "Track a Report"],
+              ["rules", "Rules & Process"],
               ["offices", "DENR Offices"],
               ["about", "About Us"],
             ].map(([key, label]) => (
@@ -272,9 +318,9 @@ export default function App() {
                 onClick={() => setPage(key)}
                 style={{
                   ...buttonStyle,
-                  background: page === key ? "#16a34a" : "#ffffff",
-                  color: page === key ? "#ffffff" : "#0f172a",
-                  border: "1px solid #cbd5e1",
+                  background: page === key ? primaryGreen : "#ffffff",
+                  color: page === key ? "#ffffff" : bodyColor,
+                  border: "1px solid #86efac",
                 }}
               >
                 {label}
@@ -289,129 +335,236 @@ export default function App() {
           <div style={{ display: "grid", gap: "24px" }}>
             <section
               style={{
-                background: "linear-gradient(to right, #16a34a, #22c55e, #2563eb)",
+                background: "linear-gradient(to right, #166534, #16a34a, #22c55e)",
                 color: "white",
                 borderRadius: "24px",
                 padding: "40px",
               }}
             >
-              <h2 style={{ fontSize: "42px", marginTop: 0 }}>
-                Help Protect Our Philippines' Environment - Report Problems Easily!
+              <h2 style={{ fontSize: "42px", marginTop: 0, fontWeight: "bold" }}>
+                Protect the Environment. Report Issues That Matter.
               </h2>
               <p style={{ maxWidth: "700px", fontSize: "18px" }}>
-                A simple reporting website where citizens can submit environmental concerns,
-                receive a tracking code, and check updates on the same computer.
+                A centralized platform where citizens can report environmental
+                concerns, receive a tracking code, and monitor the status of
+                their reports.
               </p>
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                  marginTop: "20px",
+                }}
+              >
                 <button
                   onClick={() => setPage("report")}
-                  style={{ ...buttonStyle, background: "#f97316", color: "#fff" }}
+                  style={{
+                    ...buttonStyle,
+                    background: "#14532d",
+                    color: "#fff",
+                    border: "1px solid #dcfce7",
+                  }}
                 >
-                  Click Here to Report
+                  Submit a Report
                 </button>
                 <button
                   onClick={() => setPage("track")}
-                  style={{ ...buttonStyle, background: "#fff", color: "#0f172a" }}
+                  style={{
+                    ...buttonStyle,
+                    background: "#ffffff",
+                    color: "#14532d",
+                  }}
                 >
-                  Track Your Report
+                  Track a Report
                 </button>
               </div>
             </section>
 
-            <section style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))" }}>
+            <section
+              style={{
+                display: "grid",
+                gap: "16px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+              }}
+            >
               <div style={cardStyle}>
-                <h3>Click Here to Report</h3>
-                <p>Send an environmental concern in a few simple steps.</p>
+                <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                  Submit an Environmental Report
+                </h3>
+                <p>File a report quickly by providing the necessary details.</p>
                 <button
                   onClick={() => setPage("report")}
-                  style={{ ...buttonStyle, width: "100%", background: "#16a34a", color: "#fff" }}
+                  style={{
+                    ...buttonStyle,
+                    width: "100%",
+                    background: primaryGreen,
+                    color: "#fff",
+                  }}
                 >
-                  Report Now
+                  Submit Now
                 </button>
               </div>
 
               <div style={cardStyle}>
-                <h3>Find Your Local DENR Office</h3>
-                <p>See sample DENR office contact information for the prototype.</p>
+                <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                  Locate the Proper DENR Office
+                </h3>
+                <p>View office information for report handling and coordination.</p>
                 <button
                   onClick={() => setPage("offices")}
-                  style={{ ...buttonStyle, width: "100%", background: "#2563eb", color: "#fff" }}
+                  style={{
+                    ...buttonStyle,
+                    width: "100%",
+                    background: primaryGreen,
+                    color: "#fff",
+                  }}
                 >
-                  Find Offices
+                  View Offices
                 </button>
               </div>
 
               <div style={cardStyle}>
-                <h3>See What's Being Fixed</h3>
-                <p>Track saved reports and check their current status.</p>
+                <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                  Check Report Status
+                </h3>
+                <p>Use your tracking code to monitor the progress of a report.</p>
                 <button
                   onClick={() => setPage("track")}
-                  style={{ ...buttonStyle, width: "100%", background: "#f97316", color: "#fff" }}
+                  style={{
+                    ...buttonStyle,
+                    width: "100%",
+                    background: primaryGreen,
+                    color: "#fff",
+                  }}
                 >
-                  Track Reports
+                  Track Report
                 </button>
               </div>
             </section>
 
-            <section style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+            <section
+              style={{
+                display: "grid",
+                gap: "16px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              }}
+            >
               <div style={cardStyle}>
-                <p>Total Reports</p>
-                <h2 style={{ color: "#15803d" }}>{totalReports}</h2>
+                <p style={{ color: mutedColor }}>Total Reports</p>
+                <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                  {totalReports}
+                </h2>
               </div>
               <div style={cardStyle}>
-                <p>Being Checked</p>
-                <h2 style={{ color: "#1d4ed8" }}>{checkingCount}</h2>
+                <p style={{ color: mutedColor }}>Under Review</p>
+                <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                  {checkingCount}
+                </h2>
               </div>
               <div style={cardStyle}>
-                <p>Being Fixed</p>
-                <h2 style={{ color: "#ea580c" }}>{fixedCount}</h2>
+                <p style={{ color: mutedColor }}>In Progress</p>
+                <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                  {fixedCount}
+                </h2>
               </div>
               <div style={cardStyle}>
-                <p>Done</p>
-                <h2 style={{ color: "#059669" }}>{doneCount}</h2>
+                <p style={{ color: mutedColor }}>Resolved</p>
+                <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                  {doneCount}
+                </h2>
               </div>
             </section>
 
-            <section style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}>
+            <section
+              style={{
+                display: "grid",
+                gap: "16px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+              }}
+            >
               <div style={cardStyle}>
-                <h3>What We Do</h3>
-                <p>We make environmental reporting easier for students and citizens.</p>
-                <p>Reports are saved in this browser as a prototype so you can demonstrate the full user flow.</p>
-                <p>Users can submit concerns, receive a tracking code, and check updates later on the same computer.</p>
+                <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                  Our Purpose
+                </h3>
+                <p>
+                  e-Enforce PH supports easier reporting of environmental concerns
+                  by providing a structured submission and tracking process.
+                </p>
+                <p>
+                  Citizens can submit concerns, receive a tracking code, and
+                  monitor report progress through the system.
+                </p>
               </div>
 
               <div style={cardStyle}>
-                <h3>Common Problems to Report</h3>
+                <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                  Common Issues You Can Report
+                </h3>
                 <p>• Illegal dumping</p>
-                <p>• Illegal logging / cutting trees</p>
-                <p>• Dirty or polluted water</p>
-                <p>• Smoke and air pollution</p>
+                <p>• Illegal logging</p>
+                <p>• Water pollution</p>
+                <p>• Air pollution</p>
                 <p>• Wildlife harm</p>
               </div>
             </section>
 
             <section style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-              <button onClick={seedDemoData} style={{ ...buttonStyle, background: "#fff", border: "1px solid #cbd5e1" }}>
-                Load Demo Reports
+              <button
+                onClick={seedDemoData}
+                style={{
+                  ...buttonStyle,
+                  background: "#ffffff",
+                  border: "1px solid #86efac",
+                  color: bodyColor,
+                }}
+              >
+                Load Sample Reports
               </button>
-              <button onClick={clearAllReports} style={{ ...buttonStyle, background: "#fff", border: "1px solid #cbd5e1" }}>
-                Clear Prototype Data
+              <button
+                onClick={clearAllReports}
+                style={{
+                  ...buttonStyle,
+                  background: "#ffffff",
+                  border: "1px solid #86efac",
+                  color: bodyColor,
+                }}
+              >
+                Clear Reports
               </button>
             </section>
           </div>
         )}
 
         {page === "report" && (
-          <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+          <div
+            style={{
+              display: "grid",
+              gap: "24px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            }}
+          >
             <div style={cardStyle}>
-              <h2>Report a Problem</h2>
-              <p style={{ color: "#64748b" }}>
-                This prototype saves your report only on this computer/browser.
+              <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                Submit a Report
+              </h2>
+              <p style={{ color: mutedColor }}>
+                Provide the necessary details about the environmental issue you
+                observed.
               </p>
 
               <div style={{ marginTop: "20px" }}>
-                <label><strong>Step 1: Choose the kind of problem</strong></label>
-                <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "12px" }}>
+                <label>
+                  <strong>Step 1: Select the type of issue</strong>
+                </label>
+                <div
+                  style={{
+                    display: "grid",
+                    gap: "12px",
+                    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                    marginTop: "12px",
+                  }}
+                >
                   {issueTypes.map((type) => (
                     <button
                       key={type.id}
@@ -420,79 +573,145 @@ export default function App() {
                         textAlign: "left",
                         padding: "16px",
                         borderRadius: "16px",
-                        border: selectedIssue === type.id ? "2px solid #22c55e" : "1px solid #cbd5e1",
-                        background: selectedIssue === type.id ? "#f0fdf4" : "#fff",
+                        border:
+                          selectedIssue === type.id
+                            ? "2px solid #16a34a"
+                            : "1px solid #bbf7d0",
+                        background:
+                          selectedIssue === type.id ? lightGreen : "#fff",
                         cursor: "pointer",
+                        color: bodyColor,
                       }}
                     >
-                      <div style={{ fontSize: "28px" }}>{type.emoji}</div>
-                      <h4 style={{ marginBottom: "6px" }}>{type.title}</h4>
-                      <p style={{ margin: 0, color: "#64748b", fontSize: "14px" }}>{type.description}</p>
+                      <div
+                        style={{
+                          overflow: "hidden",
+                          borderRadius: "12px",
+                          marginBottom: "10px",
+                        }}
+                      >
+                        <img
+                          src={type.image}
+                          alt={type.title}
+                          style={{
+                            width: "100%",
+                            height: "140px",
+                            objectFit: "cover",
+                            display: "block",
+                          }}
+                        />
+                      </div>
+                      <h4
+                        style={{
+                          marginBottom: "6px",
+                          color: headingColor,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        {type.title}
+                      </h4>
+                      <p
+                        style={{
+                          margin: 0,
+                          color: mutedColor,
+                          fontSize: "14px",
+                        }}
+                      >
+                        {type.description}
+                      </p>
                     </button>
                   ))}
                 </div>
               </div>
 
               <div style={{ marginTop: "20px" }}>
-                <label><strong>Step 2: Where did it happen?</strong></label>
+                <label>
+                  <strong>Step 2: Specify the location</strong>
+                </label>
                 <input
                   style={inputStyle}
-                  placeholder="Type the location, barangay, city, or landmark"
+                  placeholder="Enter the barangay, city, municipality, or landmark"
                   value={location}
                   onChange={(e) => setLocation(e.target.value)}
                 />
               </div>
 
               <div style={{ marginTop: "20px" }}>
-                <label><strong>Step 3: Tell us what you saw</strong></label>
+                <label>
+                  <strong>Step 3: Describe the situation</strong>
+                </label>
                 <textarea
                   style={{ ...inputStyle, minHeight: "120px" }}
-                  placeholder="Write the details of the issue here"
+                  placeholder="Provide clear details about the issue"
                   value={details}
                   onChange={(e) => setDetails(e.target.value)}
                 />
               </div>
 
-              <div style={{ marginTop: "20px", padding: "16px", border: "1px solid #cbd5e1", borderRadius: "16px" }}>
-                <label><strong>Step 4: Choose anonymity option</strong></label>
-                <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "12px" }}>
+              <div
+                style={{
+                  marginTop: "20px",
+                  padding: "16px",
+                  border: "1px solid #bbf7d0",
+                  borderRadius: "16px",
+                  background: "#fcfffd",
+                }}
+              >
+                <label>
+                  <strong>Step 4: Choose your reporting preference</strong>
+                </label>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "12px",
+                    flexWrap: "wrap",
+                    marginTop: "12px",
+                  }}
+                >
                   <button
                     onClick={() => setIsAnonymous(true)}
                     style={{
                       ...buttonStyle,
-                      background: isAnonymous ? "#16a34a" : "#fff",
-                      color: isAnonymous ? "#fff" : "#000",
-                      border: "1px solid #cbd5e1",
+                      background: isAnonymous ? primaryGreen : "#fff",
+                      color: isAnonymous ? "#fff" : bodyColor,
+                      border: "1px solid #86efac",
                     }}
                   >
-                    Stay Anonymous
+                    Remain Anonymous
                   </button>
                   <button
                     onClick={() => setIsAnonymous(false)}
                     style={{
                       ...buttonStyle,
-                      background: !isAnonymous ? "#2563eb" : "#fff",
-                      color: !isAnonymous ? "#fff" : "#000",
-                      border: "1px solid #cbd5e1",
+                      background: !isAnonymous ? primaryGreen : "#fff",
+                      color: !isAnonymous ? "#fff" : bodyColor,
+                      border: "1px solid #86efac",
                     }}
                   >
-                    Give My Name / Number
+                    Provide My Information
                   </button>
                 </div>
 
                 {!isAnonymous && (
-                  <div style={{ display: "grid", gap: "12px", gridTemplateColumns: "1fr 1fr", marginTop: "16px" }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gap: "12px",
+                      gridTemplateColumns: "1fr 1fr",
+                      marginTop: "16px",
+                    }}
+                  >
                     <div>
                       <label>Your Name</label>
                       <input
                         style={inputStyle}
                         value={reporterName}
                         onChange={(e) => setReporterName(e.target.value)}
-                        placeholder="Enter your name"
+                        placeholder="Enter your full name"
                       />
                     </div>
                     <div>
-                      <label>Phone Number</label>
+                      <label>Contact Number</label>
                       <input
                         style={inputStyle}
                         value={reporterContact}
@@ -504,16 +723,32 @@ export default function App() {
                 )}
               </div>
 
-              <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "20px" }}>
+              <div
+                style={{
+                  display: "flex",
+                  gap: "12px",
+                  flexWrap: "wrap",
+                  marginTop: "20px",
+                }}
+              >
                 <button
                   onClick={handleSubmitReport}
-                  style={{ ...buttonStyle, background: "#16a34a", color: "#fff" }}
+                  style={{
+                    ...buttonStyle,
+                    background: primaryGreen,
+                    color: "#fff",
+                  }}
                 >
-                  Send My Report
+                  Submit Report
                 </button>
                 <button
                   onClick={resetForm}
-                  style={{ ...buttonStyle, background: "#fff", border: "1px solid #cbd5e1" }}
+                  style={{
+                    ...buttonStyle,
+                    background: "#fff",
+                    border: "1px solid #86efac",
+                    color: bodyColor,
+                  }}
                 >
                   Clear Form
                 </button>
@@ -521,36 +756,120 @@ export default function App() {
             </div>
 
             <div style={cardStyle}>
-              <h3>Prototype Notes</h3>
-              <div style={{ background: "#eff6ff", padding: "14px", borderRadius: "14px", marginBottom: "12px" }}>
-                <strong>How this demo saves data</strong>
-                <p>Reports are stored in localStorage, which means they stay on this browser only.</p>
+              <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                Reporting Guidelines
+              </h3>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  padding: "14px",
+                  borderRadius: "14px",
+                  marginBottom: "12px",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                <strong>Provide complete details</strong>
+                <p>
+                  Include the exact location and a clear description to help
+                  authorities review the concern properly.
+                </p>
               </div>
-              <div style={{ background: "#f0fdf4", padding: "14px", borderRadius: "14px", marginBottom: "12px" }}>
-                <strong>What works now</strong>
-                <p>Submit report, generate tracking code, track reports, and show saved records on the same computer.</p>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  padding: "14px",
+                  borderRadius: "14px",
+                  marginBottom: "12px",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                <strong>Use accurate information</strong>
+                <p>
+                  Reports with complete and accurate details are easier to assess
+                  and process.
+                </p>
               </div>
-              <div style={{ background: "#fff7ed", padding: "14px", borderRadius: "14px" }}>
-                <strong>Current limitation</strong>
-                <p>If you open the site on another device or clear browser storage, the reports will not be there.</p>
+              <div
+                style={{
+                  background: "#f0fdf4",
+                  padding: "14px",
+                  borderRadius: "14px",
+                  border: "1px solid #bbf7d0",
+                }}
+              >
+                <strong>Save your tracking code</strong>
+                <p>
+                  Keep your tracking code so you can monitor the status of your
+                  report.
+                </p>
               </div>
             </div>
           </div>
         )}
 
         {page === "report-success" && (
-          <div style={{ ...cardStyle, maxWidth: "700px", margin: "0 auto", textAlign: "center" }}>
-            <h2 style={{ color: "#15803d" }}>Report Sent Successfully</h2>
-            <p>Save this tracking code so you can check the status later on this computer.</p>
-            <div style={{ background: "#f0fdf4", border: "2px dashed #86efac", borderRadius: "18px", padding: "24px", margin: "20px 0" }}>
+          <div
+            style={{
+              ...cardStyle,
+              maxWidth: "700px",
+              margin: "0 auto",
+              textAlign: "center",
+            }}
+          >
+            <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+              Report Submitted Successfully
+            </h2>
+            <p>
+              Your report has been received. Use the tracking code below to
+              monitor its status.
+            </p>
+            <div
+              style={{
+                background: lightGreen,
+                border: "2px dashed #22c55e",
+                borderRadius: "18px",
+                padding: "24px",
+                margin: "20px 0",
+              }}
+            >
               <p>Your Tracking Code</p>
-              <h1 style={{ color: "#15803d", letterSpacing: "3px" }}>{submittedCode}</h1>
+              <h1
+                style={{
+                  color: headingColor,
+                  letterSpacing: "3px",
+                  fontWeight: "bold",
+                }}
+              >
+                {submittedCode}
+              </h1>
             </div>
-            <div style={{ display: "flex", justifyContent: "center", gap: "12px", flexWrap: "wrap" }}>
-              <button onClick={() => setPage("track")} style={{ ...buttonStyle, background: "#2563eb", color: "#fff" }}>
-                Track My Report
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                gap: "12px",
+                flexWrap: "wrap",
+              }}
+            >
+              <button
+                onClick={() => setPage("track")}
+                style={{
+                  ...buttonStyle,
+                  background: primaryGreen,
+                  color: "#fff",
+                }}
+              >
+                Track Report
               </button>
-              <button onClick={() => setPage("home")} style={{ ...buttonStyle, background: "#fff", border: "1px solid #cbd5e1" }}>
+              <button
+                onClick={() => setPage("home")}
+                style={{
+                  ...buttonStyle,
+                  background: "#fff",
+                  border: "1px solid #86efac",
+                  color: bodyColor,
+                }}
+              >
                 Back to Home
               </button>
             </div>
@@ -558,15 +877,26 @@ export default function App() {
         )}
 
         {page === "track" && (
-          <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+          <div
+            style={{
+              display: "grid",
+              gap: "24px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            }}
+          >
             <div style={cardStyle}>
-              <h2>Track Your Report</h2>
-              <p style={{ color: "#64748b" }}>
-                We update this prototype manually. Saved reports exist only in this browser.
+              <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                Track a Report
+              </h2>
+              <p style={{ color: mutedColor }}>
+                Enter your tracking code to view the current status of your
+                report.
               </p>
 
               <div style={{ marginTop: "20px" }}>
-                <label><strong>Enter your tracking code</strong></label>
+                <label>
+                  <strong>Enter your tracking code</strong>
+                </label>
                 <input
                   style={inputStyle}
                   placeholder="Example: EEP-0001"
@@ -577,24 +907,51 @@ export default function App() {
 
               <button
                 onClick={handleTrackReport}
-                style={{ ...buttonStyle, background: "#2563eb", color: "#fff", marginTop: "16px" }}
+                style={{
+                  ...buttonStyle,
+                  background: primaryGreen,
+                  color: "#fff",
+                  marginTop: "16px",
+                }}
               >
                 Check Status
               </button>
             </div>
 
             <div style={cardStyle}>
-              <h2>Status Result</h2>
+              <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                Report Status
+              </h2>
               {!foundReport ? (
-                <div style={{ padding: "30px", border: "1px dashed #cbd5e1", borderRadius: "16px", textAlign: "center", color: "#64748b" }}>
-                  Enter a tracking code to see the report status.
+                <div
+                  style={{
+                    padding: "30px",
+                    border: "1px dashed #86efac",
+                    borderRadius: "16px",
+                    textAlign: "center",
+                    color: mutedColor,
+                  }}
+                >
+                  Enter a valid tracking code to view report details.
                 </div>
               ) : (
                 <div>
-                  <div style={{ background: "#f8fafc", borderRadius: "16px", padding: "16px", marginBottom: "16px" }}>
+                  <div
+                    style={{
+                      background: "#f6fff8",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      marginBottom: "16px",
+                      border: "1px solid #dcfce7",
+                    }}
+                  >
                     <p>Tracking Code</p>
-                    <h2>{foundReport.trackingCode}</h2>
-                    <p><strong>Status:</strong> {foundReport.status}</p>
+                    <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                      {foundReport.trackingCode}
+                    </h2>
+                    <p>
+                      <strong>Status:</strong> {foundReport.status}
+                    </p>
                   </div>
 
                   <div style={{ marginBottom: "12px" }}>
@@ -607,10 +964,12 @@ export default function App() {
                     <strong>Details:</strong> {foundReport.details}
                   </div>
                   <div style={{ marginBottom: "12px" }}>
-                    <strong>Date Submitted:</strong> {formatDate(foundReport.submittedAt)}
+                    <strong>Date Submitted:</strong>{" "}
+                    {formatDate(foundReport.submittedAt)}
                   </div>
                   <div>
-                    <strong>Last Updated:</strong> {formatDate(foundReport.updatedAt)}
+                    <strong>Last Updated:</strong>{" "}
+                    {formatDate(foundReport.updatedAt)}
                   </div>
                 </div>
               )}
@@ -619,37 +978,84 @@ export default function App() {
         )}
 
         {page === "rules" && (
-          <div style={{ display: "grid", gap: "24px", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))" }}>
+          <div
+            style={{
+              display: "grid",
+              gap: "24px",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
+            }}
+          >
             <div style={cardStyle}>
-              <h2>How We Handle Reports</h2>
+              <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                Report Handling Process
+              </h2>
               <ol>
-                <li>Report comes in</li>
-                <li>We send it to the right office</li>
-                <li>Office checks the problem</li>
-                <li>Office fixes it or takes action</li>
-                <li>We update the status</li>
+                <li>Report is received by the system</li>
+                <li>Report is forwarded to the appropriate office</li>
+                <li>Issue is reviewed and verified</li>
+                <li>Necessary action is initiated</li>
+                <li>Status is updated in the system</li>
               </ol>
             </div>
 
             <div style={cardStyle}>
-              <h2>Types of Problems</h2>
-              <p><strong>Illegal Logging</strong> - Cutting trees without permission.</p>
-              <p><strong>Illegal Dumping</strong> - Throwing trash in open areas, rivers, or roadsides.</p>
-              <p><strong>Dirty Water</strong> - Pollution affecting rivers, lakes, and other water sources.</p>
-              <p><strong>Air Pollution</strong> - Harmful smoke, emissions, or bad air quality concerns.</p>
-              <p><strong>Wildlife Harm</strong> - Illegal wildlife capture, abuse, or trade.</p>
+              <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+                Types of Reportable Issues
+              </h2>
+              <p>
+                <strong>Illegal Logging</strong> - Unauthorized cutting or
+                removal of trees.
+              </p>
+              <p>
+                <strong>Illegal Dumping</strong> - Improper disposal of waste in
+                open areas, rivers, or roadsides.
+              </p>
+              <p>
+                <strong>Water Pollution</strong> - Pollution affecting rivers,
+                lakes, and other water sources.
+              </p>
+              <p>
+                <strong>Air Pollution</strong> - Harmful smoke, emissions, or
+                poor air quality concerns.
+              </p>
+              <p>
+                <strong>Wildlife Harm</strong> - Illegal wildlife capture, trade,
+                abuse, or destruction.
+              </p>
             </div>
           </div>
         )}
 
         {page === "offices" && (
           <div style={cardStyle}>
-            <h2>DENR Offices</h2>
-            <p style={{ color: "#64748b" }}>Sample office list for demonstration only.</p>
-            <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "20px" }}>
+            <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+              DENR Offices
+            </h2>
+            <p style={{ color: mutedColor }}>
+              Offices responsible for reviewing and handling environmental
+              reports.
+            </p>
+            <div
+              style={{
+                display: "grid",
+                gap: "16px",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                marginTop: "20px",
+              }}
+            >
               {officeList.map((office) => (
-                <div key={office.name} style={{ border: "1px solid #e5e7eb", borderRadius: "16px", padding: "16px" }}>
-                  <h3>{office.name}</h3>
+                <div
+                  key={office.name}
+                  style={{
+                    border: "1px solid #dcfce7",
+                    borderRadius: "16px",
+                    padding: "16px",
+                    background: "#fcfffd",
+                  }}
+                >
+                  <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                    {office.name}
+                  </h3>
                   <p>{office.location}</p>
                   <p>{office.contact}</p>
                 </div>
@@ -658,57 +1064,101 @@ export default function App() {
           </div>
         )}
 
-{page === "about" && (
-  <div style={cardStyle}>
-    <h2>About Us</h2>
+        {page === "about" && (
+          <div style={cardStyle}>
+            <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+              About Us
+            </h2>
 
-    <p>
-      e-Enforce PH is a student-friendly prototype for a universal environmental reporting website.
-    </p>
+            <p>
+              e-Enforce PH is an environmental reporting system designed to make
+              it easier for citizens to report environmental concerns and track
+              their resolution.
+            </p>
 
-    <p>
-      Developed by students from <strong>Nueva Ecija University of Science and Technology (NEUST)</strong>.
-    </p>
+            <p>
+              Developed by students from{" "}
+              <strong>Nueva Ecija University of Science and Technology (NEUST)</strong>.
+            </p>
 
-    <p>
-      <strong>Program:</strong> Bachelor of Science in Business Administration Major in Human Resource Management (BSBA-HRM)<br />
-      <strong>Section:</strong> BSBA-HRM-2-A<br />
-      <strong>College:</strong> College of Management, Business and Technology
-    </p>
+            <p>
+              <strong>Program:</strong> Bachelor of Science in Business
+              Administration Major in Human Resource Management (BSBA-HRM)
+              <br />
+              <strong>Section:</strong> BSBA-HRM-2-A
+              <br />
+              <strong>College:</strong> College of Management, Business and
+              Technology
+            </p>
 
-    <h3 style={{ marginTop: "20px" }}>Team Members</h3>
-    <ul>
-      <li>Bulos, Roa Sunshine P.</li>
-      <li>Ferrer, Pretty Rose C.</li>
-      <li>Linda, Cassandra Mei M.</li>
-      <li>Padua, Resciebel V.</li>
-      <li>Sanchez, Jillian G.</li>
-    </ul>
-  </div>
-)}
+            <h3 style={{ marginTop: "20px", color: headingColor, fontWeight: "bold" }}>
+              Team Members
+            </h3>
+            <ul>
+              <li>Bulos, Roa Sunshine P.</li>
+              <li>Ferrer, Pretty Rose C.</li>
+              <li>Linda, Cassandra Mei M.</li>
+              <li>Padua, Resciebel V.</li>
+              <li>Sanchez, Jillian G.</li>
+            </ul>
+          </div>
+        )}
 
         <section style={{ marginTop: "30px" }}>
           <div style={cardStyle}>
-            <h2>Saved Reports on This Computer</h2>
-            <p style={{ color: "#64748b" }}>
-              These reports are stored in your browser using localStorage.
+            <h2 style={{ color: headingColor, fontWeight: "bold" }}>
+              Recent Reports
+            </h2>
+            <p style={{ color: mutedColor }}>
+              View submitted reports and their current status.
             </p>
 
             {reports.length === 0 ? (
-              <div style={{ padding: "30px", border: "1px dashed #cbd5e1", borderRadius: "16px", textAlign: "center", color: "#64748b" }}>
-                No saved reports yet. Submit a report or load demo reports.
+              <div
+                style={{
+                  padding: "30px",
+                  border: "1px dashed #86efac",
+                  borderRadius: "16px",
+                  textAlign: "center",
+                  color: mutedColor,
+                }}
+              >
+                No reports available at this time.
               </div>
             ) : (
-              <div style={{ display: "grid", gap: "16px", gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))", marginTop: "20px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gap: "16px",
+                  gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+                  marginTop: "20px",
+                }}
+              >
                 {reports.map((report) => (
-                  <div key={report.id} style={{ border: "1px solid #e5e7eb", borderRadius: "16px", padding: "16px" }}>
-                    <p style={{ fontSize: "12px", color: "#64748b" }}>{report.trackingCode}</p>
-                    <h3>{report.issueType}</h3>
-                    <p><strong>Status:</strong> {report.status}</p>
-                    <p><strong>Location:</strong> {report.location}</p>
+                  <div
+                    key={report.id}
+                    style={{
+                      border: "1px solid #dcfce7",
+                      borderRadius: "16px",
+                      padding: "16px",
+                      background: "#fcfffd",
+                    }}
+                  >
+                    <p style={{ fontSize: "12px", color: mutedColor }}>
+                      {report.trackingCode}
+                    </p>
+                    <h3 style={{ color: headingColor, fontWeight: "bold" }}>
+                      {report.issueType}
+                    </h3>
+                    <p>
+                      <strong>Status:</strong> {report.status}
+                    </p>
+                    <p>
+                      <strong>Location:</strong> {report.location}
+                    </p>
                     <p>{report.details}</p>
-                    <p style={{ fontSize: "12px", color: "#94a3b8" }}>
-                      Saved: {formatDate(report.submittedAt)}
+                    <p style={{ fontSize: "12px", color: mutedColor }}>
+                      Submitted: {formatDate(report.submittedAt)}
                     </p>
                   </div>
                 ))}
