@@ -31,7 +31,7 @@ const issueTypes = [
     id: "wildlife",
     title: "Wildlife Harm",
     description: "Illegal capture, trade, abuse, or destruction of wildlife.",
-    image: "/images/wildlife.jpg",
+    image: "/images/wildlife.jfif",
   },
   {
     id: "other",
@@ -344,7 +344,7 @@ export default function App() {
               <h2 style={{ fontSize: "42px", marginTop: 0, fontWeight: "bold", color: "#ffffff" }}>
                 Protect the Environment. Report Issues That Matter.
               </h2>
-              <p style={{ maxWidth: "700px", fontSize: "18px" }}>
+            <p style={{ maxWidth: "700px", fontSize: "18px", color: "#dcfce7" }}>
                 A centralized platform where citizens can report environmental
                 concerns, receive a tracking code, and monitor the status of
                 their reports.
